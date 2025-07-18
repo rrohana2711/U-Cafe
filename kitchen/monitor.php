@@ -1,22 +1,3 @@
-<?php
-include 'connect.php';
-
-function getOrderIdsByStatus($conn, $status) {
-  $sql = "SELECT order_id FROM orders WHERE status = '$status' ORDER BY order_id DESC";
-  $result = $conn->query($sql);
-
-  $orderIds = [];
-  while ($row = $result->fetch_assoc()) {
-    $orderIds[] = $row['order_id'];
-  }
-
-  return $orderIds;
-}
-
-$preparingOrders = getOrderIdsByStatus($conn, 'preparing');
-$readyOrders = getOrderIdsByStatus($conn, 'ready');
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,20 +55,58 @@ $readyOrders = getOrderIdsByStatus($conn, 'ready');
   <h1>Now Serving</h1>
 
   <div class="section-container">
-    <div class="order-section">
+    <div class="order-section" id="preparing-section">
       <div class="section-title">Preparing</div>
-      <?php foreach ($preparingOrders as $id): ?>
-        <div class="order-number">#<?= $id ?></div>
-      <?php endforeach; ?>
     </div>
 
-    <div class="order-section">
+    <div class="order-section" id="ready-section">
       <div class="section-title">Ready</div>
-      <?php foreach ($readyOrders as $id): ?>
-        <div class="order-number">#<?= $id ?></div>
-      <?php endforeach; ?>
     </div>
   </div>
+
+  <script>
+    const apiBase = 'http://localhost:3000';
+    const ws = new WebSocket('ws://localhost:8080');
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.action === 'status_updated') {
+        loadMonitor();
+      }
+    };
+
+    async function fetchOrders(status) {
+      const response = await fetch(`${apiBase}/orders?status=${status}`);
+      return await response.json();
+    }
+
+    function renderOrderNumbers(sectionId, orders) {
+      const section = document.getElementById(sectionId);
+      section.innerHTML = `<div class="section-title">${capitalize(sectionId.split('-')[0])}</div>`;
+
+      if (orders.length === 0) {
+        section.innerHTML += `<div class="order-number"></div>`;
+      } else {
+        orders.forEach(order => {
+          section.innerHTML += `<div class="order-number">${order.no}</div>`;
+        });
+      }
+    }
+
+    function capitalize(word) {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    async function loadMonitor() {
+      const preparingOrders = await fetchOrders('preparing');
+      const readyOrders = await fetchOrders('ready');
+
+      renderOrderNumbers('preparing-section', preparingOrders);
+      renderOrderNumbers('ready-section', readyOrders);
+    }
+
+    loadMonitor();
+  </script>
 
 </body>
 </html>
