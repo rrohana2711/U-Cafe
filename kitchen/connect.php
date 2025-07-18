@@ -1,12 +1,7 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "u-cafe";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli('localhost', 'root', '', 'u-cafe');
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode(['error' => 'Database connection failed: ' . $conn->connect_error]));
 }
 ?>
