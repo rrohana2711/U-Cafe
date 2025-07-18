@@ -1,45 +1,3 @@
-<?php
-include 'connect.php';
-
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['update_status'])) {
-  $order_id = intval($_POST['order_id']);
-  $new_status = $_POST['new_status'];
-  $conn->query("UPDATE orders SET status = '$new_status' WHERE order_id = $order_id");
-  header("Location: kitchen.php"); // refresh to reflect update
-  exit();
-}
-
-function getOrdersByStatus($conn, $status) {
-  $sql = "SELECT o.order_id, o.order_date, oi.item_name, oi.quantity 
-          FROM orders o 
-          JOIN order_items oi ON o.order_id = oi.order_id 
-          WHERE o.status = '$status' 
-          ORDER BY o.order_id DESC";
-
-  $result = $conn->query($sql);
-  $orders = [];
-
-  while ($row = $result->fetch_assoc()) {
-    $id = $row['order_id'];
-    if (!isset($orders[$id])) {
-      $orders[$id] = [
-        'id' => $id,
-        'time' => date('h:i A', strtotime($row['order_date'])),
-        'items' => [],
-        'status' => ucfirst($status)
-      ];
-    }
-    $orders[$id]['items'][] = $row['item_name'] . ' x' . $row['quantity'];
-  }
-
-  return $orders;
-}
-
-$pendingOrders = getOrdersByStatus($conn, 'pending');
-$preparingOrders = getOrdersByStatus($conn, 'preparing');
-$readyOrders = getOrdersByStatus($conn, 'ready');
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -125,11 +83,17 @@ $readyOrders = getOrdersByStatus($conn, 'ready');
       color: white;
       cursor: pointer;
     }
-    .cook-btn { background-color: #203C8A; }
+    .button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+    .cook-btn { background-color: #4e73df; }
     .cook-btn:hover { background-color: #1b2f6e; }
-    .done-btn { background-color: #415db2; }
-    .done-btn:hover { background-color: #203C8A; }
-    .final-done-btn { background-color: #2f854e; }
+    .done-btn { background-color: #f6c23e; }
+    .done-btn:hover { background-color: #8a6917ff; }
+    .final-done-btn { background-color: #1cc88a; }
     .final-done-btn:hover { background-color: #25673e; }
     .status { font-weight: bold; color: #203C8A; }
 
@@ -144,6 +108,28 @@ $readyOrders = getOrdersByStatus($conn, 'ready');
       padding: 4px;
       cursor: pointer;
     }
+    .status-pending {
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: red;
+  font-weight: 600;
+}
+
+.status-preparing {
+  color: #e6b800; /* yellowish */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.status-ready {
+  color: green;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+
   </style>
 </head>
 <body>
@@ -155,105 +141,119 @@ $readyOrders = getOrdersByStatus($conn, 'ready');
   <h2>Kitchen Dashboard</h2>
 
   <div class="section-container">
-    <div class="order-section">
+    <div class="order-section" id="pending-section">
       <div class="section-title">Pending</div>
-      <?php foreach ($pendingOrders as $order): ?>
-        <div class="order-card">
-          <div class="order-header">Order ID: <?= $order['id'] ?></div>
-          <div class="order-detail">
-            <div class="item-line">
-              <span><strong>Items:</strong></span>
-              <span><?= $order['time'] ?></span>
-            </div>
-            <ul class="menu-list">
-              <?php foreach ($order['items'] as $item): ?>
-                <li><?= $item ?></li>
-              <?php endforeach; ?>
-            </ul>
-          </div>
-          <div class="order-detail status-line">
-            <strong>Status:</strong>
-            <span class="status"><?= $order['status'] ?></span>
-            <form method="POST" style="display:inline;">
-              <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-              <input type="hidden" name="new_status" value="preparing">
-              <button type="submit" name="update_status" class="cook-btn">Preparing</button>
-            </form>
-          </div>
-          <img src="preview.png" class="fullscreen-icon" onclick="openFullscreen(this)" />
-        </div>
-      <?php endforeach; ?>
     </div>
 
-    <div class="order-section">
+    <div class="order-section" id="preparing-section">
       <div class="section-title">Preparing</div>
-      <?php foreach ($preparingOrders as $order): ?>
-        <div class="order-card">
-          <div class="order-header">Order ID: <?= $order['id'] ?></div>
-          <div class="order-detail">
-            <div class="item-line">
-              <span><strong>Items:</strong></span>
-              <span><?= $order['time'] ?></span>
-            </div>
-            <ul class="menu-list">
-              <?php foreach ($order['items'] as $item): ?>
-                <li><?= $item ?></li>
-              <?php endforeach; ?>
-            </ul>
-          </div>
-          <div class="order-detail status-line">
-            <strong>Status:</strong>
-            <span class="status"><?= $order['status'] ?></span>
-            <form method="POST" style="display:inline;">
-              <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-              <input type="hidden" name="new_status" value="ready">
-              <button type="submit" name="update_status" class="done-btn">Ready</button>
-            </form>
-          </div>
-          <img src="preview.png" class="fullscreen-icon" onclick="openFullscreen(this)" />
-        </div>
-      <?php endforeach; ?>
     </div>
 
-    <div class="order-section">
+    <div class="order-section" id="ready-section">
       <div class="section-title">Ready</div>
-      <?php foreach ($readyOrders as $order): ?>
-        <div class="order-card">
-          <div class="order-header">Order ID: <?= $order['id'] ?></div>
-          <div class="order-detail">
-            <div class="item-line">
-              <span><strong>Items:</strong></span>
-              <span><?= $order['time'] ?></span>
-            </div>
-            <ul class="menu-list">
-              <?php foreach ($order['items'] as $item): ?>
-                <li><?= $item ?></li>
-              <?php endforeach; ?>
-            </ul>
-          </div>
-          <div class="order-detail status-line">
-            <strong>Status:</strong>
-            <span class="status"><?= $order['status'] ?></span>
-            <form method="POST" style="display:inline;">
-              <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-              <input type="hidden" name="new_status" value="completed">
-              <button type="submit" name="update_status" class="final-done-btn">Done</button>
-            </form>
-          </div>
-          <img src="preview.png" class="fullscreen-icon" onclick="openFullscreen(this)" />
-        </div>
-      <?php endforeach; ?>
     </div>
   </div>
 
-  <div id="fullscreenOverlay">
-    <div class="fullscreen-content">
-      <button onclick="closeFullscreen()" class="close-btn">×</button>
+  <div id="fullscreenOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div class="fullscreen-content" style="background:white; padding:20px; border-radius:10px; max-width:500px; text-align:center; position:relative;">
+      <button onclick="closeFullscreen()" class="close-btn" style="position:absolute; top:10px; right:10px; font-size:20px; cursor:pointer;">×</button>
       <div id="fullscreenDetails"></div>
     </div>
   </div>
 
   <script>
+    const apiBase = 'http://localhost:3000'; // Node.js REST API
+    const ws = new WebSocket('ws://localhost:8080'); // Node.js WebSocket
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.action === 'status_updated') {
+        loadOrders();
+      }
+    };
+
+    async function fetchOrders(status) {
+  const response = await fetch(`${apiBase}/orders?status=${status}`);
+  return await response.json();
+}
+
+function renderOrders(sectionId, orders, nextStatus, buttonClass, buttonText) {
+  const section = document.getElementById(sectionId);
+  section.innerHTML = `<div class="section-title">${statusCapital(sectionId)}</div>`;
+
+  if (orders.length === 0) {
+    section.innerHTML += `<p>No orders.</p>`;
+    return;
+  }
+
+  orders.forEach(order => {
+    console.log("Order object:", order); // DEBUG
+
+    const orderCard = document.createElement('div');
+    orderCard.className = 'order-card';
+
+    const itemsList = order.items.map(item => `<li>${item}</li>`).join('');
+
+    orderCard.innerHTML = `
+    <div class="order-header">Order ID: ${order.id}</div>
+      <div class="order-header">Order No: ${order.no}</div>
+      <div class="order-detail">
+        <div class="item-line">
+          <span><strong>Items:</strong></span>
+          <span>${order.time}</span>
+        </div>
+        <ul class="menu-list">${itemsList}</ul>
+      </div>
+      <div class="order-detail status-line">
+        <strong>Status:</strong>
+        <span class="status status-${order.status}">${order.status}</span>
+      </div>
+      <div class="button-wrapper">
+        <button class="${buttonClass}" onclick="updateStatus(${order.id}, '${nextStatus}')">${buttonText}</button>
+      </div>
+      <img src="preview.png" class="fullscreen-icon" onclick="openFullscreen(this)" />
+    `;
+
+    section.appendChild(orderCard);
+  });
+  
+}
+
+
+    function statusCapital(sectionId) {
+      if (sectionId.includes('pending')) return 'Pending';
+      if (sectionId.includes('preparing')) return 'Preparing';
+      if (sectionId.includes('ready')) return 'Ready';
+      return '';
+    }
+
+    async function updateStatus(orderId, newStatus) {
+      const response = await fetch(`${apiBase}/update_status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_id: orderId, new_status: newStatus })
+      });
+
+      if (response.ok) {
+        loadOrders();
+        if (newStatus === 'ready') {
+      alert('Pickup notification has been sent to the customer via message.');
+    }
+      } else {
+        alert('Failed to update order status.');
+      }
+    }
+
+    async function loadOrders() {
+      const pendingOrders = await fetchOrders('pending');
+      const preparingOrders = await fetchOrders('preparing');
+      const readyOrders = await fetchOrders('ready');
+
+      renderOrders('pending-section', pendingOrders, 'preparing', 'cook-btn', 'Preparing');
+      renderOrders('preparing-section', preparingOrders, 'ready', 'done-btn', 'Ready');
+      renderOrders('ready-section', readyOrders, 'completed', 'final-done-btn', 'Done');
+    }
+
     function openFullscreen(icon) {
       const card = icon.closest('.order-card');
       const header = card.querySelector(".order-header").innerHTML;
@@ -273,6 +273,9 @@ $readyOrders = getOrdersByStatus($conn, 'ready');
     function closeFullscreen() {
       document.getElementById("fullscreenOverlay").style.display = "none";
     }
+
+    loadOrders();
   </script>
+
 </body>
 </html>
