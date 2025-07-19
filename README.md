@@ -69,7 +69,7 @@ This system demonstrates commercial value by digitalizing and streamlining food 
 
 **2.1 High-Level Diagram**
 
-<img src="md pic/architecture.jpg">
+<img src="md images/architecture.jpg">
 
 **Frontend/UI:**
 - Kiosk for customer to place orders by selecting the menu on the screen
@@ -247,7 +247,7 @@ The Kiosk Ordering System implements API Key-based security to protect backend A
 ### **5.0 Database Design**
 
 **5.1 Entity-Relationship Diagram (ERD)**
-<img src="md pic/erd.jpg">
+<img src="md images/erd.jpg">
 
 **5.2 Scheme Justification**
 
@@ -262,11 +262,11 @@ The Kiosk Ordering System implements API Key-based security to protect backend A
 
 Customer Flowchart
 
-<img src="md pic/flowchart cust.png">
+<img src="md images/flowchart cust.png">
 
 Kitchen Flowchart
 
-<img src="md pic/flowchart kitchen.png">
+<img src="md images/flowchart kitchen.png">
 
 **6.2 Data Validation**
 
