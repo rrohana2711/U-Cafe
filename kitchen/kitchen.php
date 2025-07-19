@@ -237,7 +237,7 @@ function renderOrders(sectionId, orders, nextStatus, buttonClass, buttonText) {
       if (response.ok) {
         loadOrders();
         if (newStatus === 'ready') {
-      alert('Pickup notification has been sent to the customer via message.');
+      alert('Pickup message has been sent to the customer.');
     }
       } else {
         alert('Failed to update order status.');
