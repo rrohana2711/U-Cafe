@@ -37,7 +37,7 @@ $orderType = isset($_GET['type']) ? $_GET['type'] : 'dine_in';
     }
 
     input {
-      width: 100%;
+      width: 90%;
       padding: 12px 14px;
       margin-bottom: 20px;
       font-size: 16px;
@@ -69,9 +69,27 @@ $orderType = isset($_GET['type']) ? $_GET['type'] : 'dine_in';
     <form action="create_order.php" method="post">
       <input type="hidden" name="order_type" value="<?= htmlspecialchars($orderType) ?>">
       <input type="text" name="customer_name" placeholder="Your Name" required>
-      <input type="tel" name="customer_phone" placeholder="Phone Number" required pattern="[0-9+ ]{7,}">
+      <input type="tel" id="phone" name="customer_phone" placeholder="Phone Number" required 
+       pattern="6[0-9]{6,}" oninput="checkPhoneFormat()">
+      <div id="phone-error" style="color: red; font-size: 14px; margin-top: -15px; margin-bottom: 15px;"></div>
       <button type="submit">Proceed to Menu</button>
     </form>
   </div>
+  <script>
+  function checkPhoneFormat() {
+    const phoneInput = document.getElementById('phone');
+    const errorDiv = document.getElementById('phone-error');
+    const pattern = /^6[0-9]{6,}$/;
+
+    if (!pattern.test(phoneInput.value)) {
+      phoneInput.setCustomValidity("Phone number must start with 6 and contain at least 7 digits.");
+      errorDiv.textContent = "*Format number is 60123456789";
+    } else {
+      phoneInput.setCustomValidity("");
+      errorDiv.textContent = "";
+    }
+  }
+</script>
+
 </body>
 </html>

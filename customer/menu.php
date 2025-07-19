@@ -478,10 +478,11 @@
 </div>
 
 <script>
-    let cart = [];
+   let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
 
     function showOrderList() {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
   const listContainer = document.getElementById('orderListContent');
   const totalEl = document.getElementById('modalTotalPrice');
   listContainer.innerHTML = '';
@@ -534,32 +535,34 @@ function closeOrderList() {
 }
 
 function goToPayment() {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
 
   if (cart.length === 0) {
     alert("Your cart is empty.");
     return;
   }
 
-  fetch('save_order.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cart)
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      // Clear localStorage and redirect
-      localStorage.removeItem('cart');
-      window.location.href = 'payment.php';
-    } else {
-      alert("Failed to save order.");
-    }
-  })
-  .catch(error => {
-    console.error("Error:", error);
-    alert("An error occurred.");
-  });
+fetch('save_order.php', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(cart)
+})
+.then(response => response.text())  // <--- temporarily use .text()
+.then(text => {
+  console.log("Raw response:", text);
+  const data = JSON.parse(text); // parse manually
+  if (data.success) {
+    localStorage.removeItem('cart');
+    window.location.href = 'payment.php';
+  } else {
+    alert("Failed to save order: " + data.message);
+  }
+})
+.catch(error => {
+  console.error("Fetch error:", error);
+  alert("An error occurred.");
+});
 }
 
   function filterMenu(category) {
@@ -635,8 +638,28 @@ function goToPayment() {
 
   filterMenu('all');
 
+  const socket = new WebSocket("ws://localhost:8080");
+
+socket.onopen = () => {
+  console.log("✅ WebSocket connected to server");
+};
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.action === 'status_updated') {
+  const orderId = data.order_id || 'Unknown';
+  const status = data.new_status || 'Unknown';
+  alert(`📢 Order #${orderId} status is now "${status}"!`);
+}
+};
+
+socket.onerror = (error) => {
+  console.error("WebSocket error:", error);
+};
+
+
   
-</script>
+</script> 
 
 </body>
 </html>

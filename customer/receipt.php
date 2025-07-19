@@ -20,12 +20,14 @@ if ($conn->connect_error) {
 }
 
 // Get total amount and payment method (if you have it stored)
-$queryOrder = $conn->prepare("SELECT total_amount FROM orders WHERE order_id = ?");
+$queryOrder = $conn->prepare("SELECT total_amount, order_number FROM orders WHERE order_id = ?");
 $queryOrder->bind_param("i", $order_id);
 $queryOrder->execute();
-$queryOrder->bind_result($total_amount);
+$queryOrder->bind_result($total_amount, $order_number);
 $queryOrder->fetch();
 $queryOrder->close();
+
+
 
 // Get order items
 $items = [];
@@ -121,7 +123,8 @@ $conn->close();
 <body>
   <div class="receipt-box"> 
     <h2>🧾 Receipt</h2>
-    <p class="order-id">Order ID: <?= htmlspecialchars($order_id) ?></p>
+    <p class="order-id">ID: <?= htmlspecialchars($order_id) ?></p>
+    <p class="order-id">Your Number: <?= htmlspecialchars($order_number) ?></p>
     <div id="receiptItems">
       <?php foreach ($items as $item): ?>
         <div class="item">
@@ -132,7 +135,8 @@ $conn->close();
     </div>
     <div class="total">
       Total: RM <?= number_format($total_amount, 2) ?><br/>
-      Payment: CASH
+      
+      Kindly make your payment at the counter.
     </div>
     <div class="thank-you">Thank you for your order!</div>
     <div class="redirect-msg">You will be redirected shortly...</div>

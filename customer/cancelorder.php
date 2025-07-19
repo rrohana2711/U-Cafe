@@ -69,7 +69,7 @@
   <div class="cancel-box">
     <h1>Order Cancelled</h1>
     <p>Your order has been successfully cancelled. We hope to serve you again soon!</p>
-    <a href="index.html" class="home-btn">Back to Menu</a>
+    <a href="index.php" class="home-btn">Back to Menu</a>
     <div class="redirect-msg">Redirecting to menu in 3 seconds...</div>
   </div>
 
