@@ -247,6 +247,7 @@ The Kiosk Ordering System implements API Key-based security to protect backend A
 ### **5.0 Database Design**
 
 **5.1 Entity-Relationship Diagram (ERD)**
+
 <img src="images/erd.jpg">
 
 **5.2 Scheme Justification**
