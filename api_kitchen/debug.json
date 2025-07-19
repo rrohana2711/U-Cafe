@@ -1,0 +1,8 @@
+{
+  "customer_name": "Dijah",
+  "customer_phone": "60123456789",
+  "order_type": "dine_in",
+  "items": [
+    {"item_name": "Nasi Lemak Ayam", "quantity": 1}
+  ]
+}
