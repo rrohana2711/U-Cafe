@@ -64,11 +64,11 @@
     <p>Please confirm to proceed to receipt and pay at counter</p>
     <form action="update_status.php" method="post" style="display: inline;">
       <input type="hidden" name="status" value="pending">
-      <button class="btn-confirm" type="submit">Done</button>
+      <button style="background-color:green"class="btn-confirm" type="submit">Done Order</button>
     </form>
     <form action="update_status.php" method="post" style="display: inline;">
       <input type="hidden" name="status" value="cancelled">
-      <button class="btn-confirm" type="submit">Cancel</button>
+      <button class="btn-confirm" type="submit">Cancel Order</button>
     </form>
   </div>
 
