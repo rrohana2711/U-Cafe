@@ -12,7 +12,7 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'Khadijah_04',
+  password: '',
   database: 'u-cafe',
   port: 3301
 });
@@ -69,19 +69,16 @@ app.post('/update_status', (req, res) => {
   db.query(updateSql, [new_status, order_id], (err, result) => {
     if (err) return res.status(500).json({ error: 'Update failed' });
 
-    // ✅ Broadcast to WebSocket
     wss.broadcast({
       action: 'status_updated',
       order_id: order_id,
       new_status: new_status
     });
 
-    // ✅ If status is not 'ready', just respond
     if (new_status !== 'ready') {
       return res.json({ message: 'Status updated successfully' });
     }
 
-    // ✅ If status is 'ready', fetch customer phone and send SMS
     const fetchSql = "SELECT customer_phone, order_number FROM orders WHERE order_id = ?";
     db.query(fetchSql, [order_id], (err, results) => {
       if (err || results.length === 0) {
